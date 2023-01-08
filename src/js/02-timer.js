@@ -14,7 +14,6 @@ const leftSeconds = document.querySelector('[data-seconds]');
 startBtnEl.addEventListener('click', onStartClick);
 
 startBtnEl.disabled = true;
-
 const PROMPT_DELAY = 1000;
 
 const options = {
