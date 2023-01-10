@@ -21,16 +21,34 @@ const options = {
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose(selectedDates) {
-    if (selectedDates[0] < new Date()) {
-      Notiflix.Notify.failure('Please choose a date in the future');
+  onClose([selectedDates]) {
+    if (selectedDates < Date.now()) {      
       startBtnEl.disabled = true;
+      contentTimeLasted();
+      return alert('Please choose a date in the future');
     }
       startBtnEl.disabled = false;
   },
 };
 
 flatpickr(input, options);
+const timeFlat = new flatpickr(input, options); 
+
+function contentTimeLasted({
+  days = '00',
+  hours = '00',
+  minutes = '00',
+  seconds = '00',
+} = {}) {
+  leftDays.textContent = days;
+  leftHours.textContent = hours;
+  leftMinutes.textContent = minutes;
+  leftSeconds.textContent = seconds;
+}
+
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+}
 
 function convertMs(ms) {
   const second = 1000;
@@ -38,35 +56,24 @@ function convertMs(ms) {
   const hour = minute * 60;
   const day = hour * 24;
 
-  const days = addLeadingZero(Math.floor(ms / day));
-  const hours = addLeadingZero(Math.floor((ms % day) / hour));
-  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
-  const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
+  const days = Math.floor(ms / day);
+  const hours = Math.floor((ms % day) / hour);
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
 }
-function addLeadingZero(value) {
-  return String(value).padStart(2, '0');
-}
 
 function onStartClick() {
-  let  timerId = setInterval(() => {
-    const selectedTime =  new Date(input.value);
-    const timeValue = selectedTime - new Date();
+  const  intervalId = setInterval(() => {
+    const timeValue = timeFlat.selectedDates[0].getTime() - Date.now();
 
-    startBtnEl.disabled = true;
-    Notiflix.Block.hourglass('[data-start]');
+    if (timeValue <= 500) {
+      clearInterval(intervalId);
+      return;
+    }
 
-    if (timeValue >= 0) {
-      let leftTime = convertMs(timeValue);
-      leftDays.textContent = leftTime.days;
-      leftHours.textContent = leftTime.hours;
-      leftMinutes.textContent = leftTime.minutes;
-      leftSeconds.textContent = leftTime.seconds;
-      } else {
-        Notiflix.Block.remove('[data-start]');
-        Notiflix.Notify.success('Finish');
-        clearInterval(timerId);
-        }
-  },PROMPT_DELAY);
+    const timeObject = convertMs(timeValue);    
+    contentTimeLasted(timeObject, addLeadingZero);
+  }, PROMPT_DELAY);
 }
