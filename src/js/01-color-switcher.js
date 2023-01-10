@@ -5,6 +5,7 @@ function getRandomHexColor() {
 const bodyEl = document.querySelector('body');
 const startBtnEl = document.querySelector('[data-start]');
 const stopBtnEl = document.querySelector('[data-stop]');
+stopBtnEl.disabled = true;
 
 startBtnEl.addEventListener('click', onClickStart);
 stopBtnEl.addEventListener('click', onClickStop);
@@ -12,9 +13,13 @@ stopBtnEl.addEventListener('click', onClickStop);
 let timerId = null;
 const PROMPT_DELAY = 1000;
 
+function statusBtn(on, off) {
+  stopBtnEl.disabled = on;
+  startBtnEl.disabled = off;
+}
+
 function onClickStart() {
-  startBtnEl.disabled = true;
-  stopBtnEl.disabled = false;
+  statusBtn(false, true);
   timerId = setInterval(changeColor, PROMPT_DELAY);
 }
 
@@ -23,7 +28,6 @@ function changeColor() {
 }
 
 function onClickStop() {
-  startBtnEl.disabled = false;
-  stopBtnEl.disabled = true;
+  statusBtn(true, false);
   clearInterval(timerId);
 }
